@@ -1,3 +1,4 @@
+import * as model from './model.js';
 import icons from 'url:../img/icons.svg'; // loading the icons path (parcel)
 import 'core-js/stable'; // polifill latest js feature
 import 'regenerator-runtime/runtime'; // polifill async await
@@ -12,6 +13,7 @@ const timeout = function (s) {
   });
 };
 
+// Function that create spinner element
 function renderSpinner(parentElement) {
   const html = `
       <div class="spinner">
@@ -23,6 +25,7 @@ function renderSpinner(parentElement) {
   parentElement.insertAdjacentHTML('afterbegin', html);
 }
 
+// Function that displays recipe inside the container.
 async function showRecipe() {
   try {
     const recipeId = window.location.hash.slice(1); // getting hash from the url (if the url is localhost:3000/#1234)
@@ -33,28 +36,13 @@ async function showRecipe() {
     // displaying spinner (once the data is loaded we will clear the container and attach data)
     renderSpinner(recipeContainer);
 
-    const res = await fetch(
-      `https://forkify-api.herokuapp.com/api/v2/recipes/${recipeId}`
-    );
-    const data = await res.json();
+    //  calling function to fetch data from recipe details
+    await model.loadRecipe(recipeId);
 
-    if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+    const { recipe } = model.state;
 
-    let { recipe } = data.data;
-
-    // creating recipe object with new property names for easy access
-    recipe = {
-      id: recipe.id,
-      title: recipe.title,
-      publisher: recipe.publisher,
-      sourceUrl: recipe.source_url,
-      image: recipe.image_url,
-      servings: recipe.servings,
-      cookingTime: recipe.cooking_time,
-      ingredients: recipe.ingredients,
-    };
-
-    console.log(recipe);
+    console.log('Inside controller.js');
+    console.log(model.state.recipe);
 
     // Rendering recipe details
     const html = `
