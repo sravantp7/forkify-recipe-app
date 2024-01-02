@@ -4,6 +4,10 @@ import { getJSON } from './helpers.js';
 // gobal state which holds the data
 export const state = {
   recipe: {},
+  search: {
+    query: '',
+    results: [],
+  },
 };
 
 // function that fetches data from forkify api
@@ -24,6 +28,27 @@ export async function loadRecipe(recipeId) {
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
     };
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function loadSearchResults(query = 'pizza') {
+  try {
+    state.search.query = query;
+
+    // fetching data
+    const recipesData = await getJSON(`${FORKIFY_API}?search=${query}`);
+
+    // Renaming field in the result data
+    state.search.results = recipesData.data.recipes.map(recipe => {
+      return {
+        id: recipe.id,
+        image: recipe.image_url,
+        publisher: recipe.publisher,
+        title: recipe.title,
+      };
+    });
   } catch (err) {
     throw err;
   }
