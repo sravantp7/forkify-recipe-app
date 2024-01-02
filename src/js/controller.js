@@ -3,8 +3,6 @@ import recipeView from './views/recipeView.js'; // recipeView will be the object
 import 'core-js/stable'; // polifill latest js feature
 import 'regenerator-runtime/runtime'; // polifill async await
 
-const recipeContainer = document.querySelector('.recipe');
-
 // Function that displays recipe inside the container.
 async function controlRecipe() {
   try {
@@ -22,7 +20,8 @@ async function controlRecipe() {
     // Rendering recipe details using view
     recipeView.render(model.state.recipe);
   } catch (err) {
-    console.error(err.message);
+    // invoking render error method in the recipe view
+    recipeView.renderError();
   }
 }
 

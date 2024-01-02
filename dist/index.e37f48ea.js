@@ -581,7 +581,6 @@ var _modelJs = require("./model.js");
 var _recipeViewJs = require("./views/recipeView.js"); // recipeView will be the object created in the view
 var _recipeViewJsDefault = parcelHelpers.interopDefault(_recipeViewJs);
 var _runtime = require("regenerator-runtime/runtime"); // polifill async await
-const recipeContainer = document.querySelector(".recipe");
 // Function that displays recipe inside the container.
 async function controlRecipe() {
     try {
@@ -595,7 +594,8 @@ async function controlRecipe() {
         // Rendering recipe details using view
         (0, _recipeViewJsDefault.default).render(_modelJs.state.recipe);
     } catch (err) {
-        console.error(err.message);
+        // invoking render error method in the recipe view
+        (0, _recipeViewJsDefault.default).renderError();
     }
 }
 function init() {
@@ -1861,7 +1861,7 @@ async function loadRecipe(recipeId) {
             ingredients: recipe.ingredients
         };
     } catch (err) {
-        console.error(err.message);
+        throw err;
     }
 }
 
@@ -2525,6 +2525,8 @@ var _fractyDefault = parcelHelpers.interopDefault(_fracty);
 class RecipeView {
     #data;
     #parentElement = document.querySelector(".recipe");
+    #errorMessage = "No recipes found for your query. Please try again!";
+    #message = "";
     render(data) {
         this.#data = data;
         const markup = this.#generateMarkup();
@@ -2552,6 +2554,32 @@ class RecipeView {
             "hashchange",
             "load"
         ].forEach((ev)=>window.addEventListener(ev, handler));
+    }
+    renderError(message = this.#errorMessage) {
+        const errorMarkup = `
+        <div class="error">
+            <div>
+                <svg>
+                    <use href="${(0, _iconsSvgDefault.default)}#icon-alert-triangle"></use>
+                </svg>
+            </div>
+            <p>${message}</p>
+        </div>`;
+        this.#clear();
+        this.#parentElement.insertAdjacentHTML("afterbegin", errorMarkup);
+    }
+    renderMessage(message = this.#message) {
+        const markup = `        
+        <div class="message">
+            <div>
+                <svg>
+                    <use href="${(0, _iconsSvgDefault.default)}#icon-smile"></use>
+                </svg>
+            </div>
+            <p>${message}</p>
+        </div>`;
+        this.#clear();
+        this.#parentElement.insertAdjacentHTML("afterbegin", markup);
     }
     // private method which will generate html
     #generateMarkup() {
