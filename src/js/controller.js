@@ -5,14 +5,6 @@ import 'regenerator-runtime/runtime'; // polifill async await
 
 const recipeContainer = document.querySelector('.recipe');
 
-const timeout = function (s) {
-  return new Promise(function (_, reject) {
-    setTimeout(function () {
-      reject(new Error(`Request took too long! Timeout after ${s} second`));
-    }, s * 1000);
-  });
-};
-
 // Function that displays recipe inside the container.
 async function controlRecipe() {
   try {
@@ -26,8 +18,6 @@ async function controlRecipe() {
 
     //  calling function to fetch data from recipe details
     await model.loadRecipe(recipeId);
-
-    console.log(model.state.recipe);
 
     // Rendering recipe details using view
     recipeView.render(model.state.recipe);

@@ -582,13 +582,6 @@ var _recipeViewJs = require("./views/recipeView.js"); // recipeView will be the 
 var _recipeViewJsDefault = parcelHelpers.interopDefault(_recipeViewJs);
 var _runtime = require("regenerator-runtime/runtime"); // polifill async await
 const recipeContainer = document.querySelector(".recipe");
-const timeout = function(s) {
-    return new Promise(function(_, reject) {
-        setTimeout(function() {
-            reject(new Error(`Request took too long! Timeout after ${s} second`));
-        }, s * 1000);
-    });
-};
 // Function that displays recipe inside the container.
 async function controlRecipe() {
     try {
@@ -599,7 +592,6 @@ async function controlRecipe() {
         (0, _recipeViewJsDefault.default).renderSpinner();
         //  calling function to fetch data from recipe details
         await _modelJs.loadRecipe(recipeId);
-        console.log(_modelJs.state.recipe);
         // Rendering recipe details using view
         (0, _recipeViewJsDefault.default).render(_modelJs.state.recipe);
     } catch (err) {
@@ -1848,20 +1840,19 @@ module.exports = function(scheduler, hasTimeArg) {
 /* global Bun -- Bun case */ module.exports = typeof Bun == "function" && Bun && typeof Bun.version == "string";
 
 },{}],"Y4A21":[function(require,module,exports) {
-// gobal state which holds the data
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "state", ()=>state);
 // function that fetches data from forkify api
 parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
+var _configJs = require("./config.js");
+var _helpersJs = require("./helpers.js");
 const state = {
     recipe: {}
 };
 async function loadRecipe(recipeId) {
     try {
-        const res = await fetch(`https://forkify-api.herokuapp.com/api/v2/recipes/${recipeId}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+        const data = await (0, _helpersJs.getJSON)(`${(0, _configJs.FORKIFY_API)}/${recipeId}`);
         const { recipe } = data.data;
         // modifying state object
         state.recipe = {
@@ -1874,13 +1865,12 @@ async function loadRecipe(recipeId) {
             cookingTime: recipe.cooking_time,
             ingredients: recipe.ingredients
         };
-        console.log(state.recipe);
     } catch (err) {
-        console.log(err.message);
+        console.error(err.message);
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config.js":"k5Hzs","./helpers.js":"hGI1E"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {
     return a && a.__esModule ? a : {
         default: a
@@ -1910,7 +1900,42 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"dXNgZ":[function(require,module,exports) {
+},{}],"k5Hzs":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "FORKIFY_API", ()=>FORKIFY_API);
+parcelHelpers.export(exports, "TIMEOUT_SEC", ()=>TIMEOUT_SEC);
+const FORKIFY_API = "https://forkify-api.herokuapp.com/api/v2/recipes";
+const TIMEOUT_SEC = 10; // time after which the fetch request will timeout
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hGI1E":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+// function that fetch data from the given URL and return it
+parcelHelpers.export(exports, "getJSON", ()=>getJSON);
+var _configJs = require("./config.js");
+function timeout(s) {
+    return new Promise((_, reject)=>{
+        setTimeout(function() {
+            reject(new Error(`Request took too long! Timeout after ${s} second`));
+        }, s * 1000);
+    });
+}
+async function getJSON(url) {
+    try {
+        const res = await Promise.race([
+            fetch(url),
+            timeout((0, _configJs.TIMEOUT_SEC))
+        ]);
+        const data = await res.json();
+        if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+        return data;
+    } catch (err) {
+        throw err; // makes the promise rejected state
+    }
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config.js":"k5Hzs"}],"dXNgZ":[function(require,module,exports) {
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
