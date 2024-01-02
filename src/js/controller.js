@@ -26,13 +26,8 @@ async function controlRecipe() {
   }
 }
 
-// controlRecipe();
+function init() {
+  recipeView.addHandlerRender(controlRecipe);
+}
 
-// listening for hash change event in the url
-// window.addEventListener('hashchange', controlRecipe);
-// window.addEventListener('load', controlRecipe);
-
-// improved event listener
-['hashchange', 'load'].forEach(ev =>
-  window.addEventListener(ev, controlRecipe)
-);
+init();

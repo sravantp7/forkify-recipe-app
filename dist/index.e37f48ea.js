@@ -598,15 +598,10 @@ async function controlRecipe() {
         console.error(err.message);
     }
 }
-// controlRecipe();
-// listening for hash change event in the url
-// window.addEventListener('hashchange', controlRecipe);
-// window.addEventListener('load', controlRecipe);
-// improved event listener
-[
-    "hashchange",
-    "load"
-].forEach((ev)=>window.addEventListener(ev, controlRecipe));
+function init() {
+    (0, _recipeViewJsDefault.default).addHandlerRender(controlRecipe);
+}
+init();
 
 },{"core-js/modules/web.immediate.js":"49tUX","./model.js":"Y4A21","regenerator-runtime/runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./views/recipeView.js":"l60JC"}],"49tUX":[function(require,module,exports) {
 "use strict";
@@ -2551,6 +2546,12 @@ class RecipeView {
         </div>`;
         this.#clear();
         this.#parentElement.insertAdjacentHTML("afterbegin", markup);
+    }
+    addHandlerRender(handler) {
+        [
+            "hashchange",
+            "load"
+        ].forEach((ev)=>window.addEventListener(ev, handler));
     }
     // private method which will generate html
     #generateMarkup() {
