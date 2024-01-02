@@ -1,8 +1,14 @@
 import * as model from './model.js';
 import recipeView from './views/recipeView.js'; // recipeView will be the object created in the view
 import searchView from './views/searchView.js';
+import resultsView from './views/resultsView.js';
 import 'core-js/stable'; // polifill latest js feature
 import 'regenerator-runtime/runtime'; // polifill async await
+
+// parcel settings to persist data even when we reload the dev server
+if (module.hot) {
+  module.hot.accept();
+}
 
 // Function that displays recipe inside the container.
 async function controlRecipe() {
@@ -15,7 +21,7 @@ async function controlRecipe() {
     // displaying spinner (once the data is loaded we will clear the container and attach data)
     recipeView.renderSpinner();
 
-    //  calling function to fetch data from recipe details
+    // calling function to fetch data from recipe details
     await model.loadRecipe(recipeId);
 
     // Rendering recipe details using view
@@ -29,14 +35,16 @@ async function controlRecipe() {
 // function that fetches recipes
 async function controlSearchResults() {
   try {
+    resultsView.renderSpinner();
     const query = searchView.getQuery();
 
     if (!query) return;
 
     await model.loadSearchResults(query);
-    console.log(model.state.search.results);
+
+    resultsView.render(model.state.search.results); // passing array of recipies
   } catch (err) {
-    console.log(err.message);
+    resultsView.renderError(err.message);
   }
 }
 

@@ -33,12 +33,16 @@ export async function loadRecipe(recipeId) {
   }
 }
 
-export async function loadSearchResults(query = 'pizza') {
+export async function loadSearchResults(query) {
   try {
     state.search.query = query;
 
     // fetching data
     const recipesData = await getJSON(`${FORKIFY_API}?search=${query}`);
+
+    if (recipesData.data.recipes.length === 0) {
+      throw new Error('No recipies found, Please try again!');
+    }
 
     // Renaming field in the result data
     state.search.results = recipesData.data.recipes.map(recipe => {
