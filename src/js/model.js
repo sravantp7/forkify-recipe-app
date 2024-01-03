@@ -30,7 +30,6 @@ export async function loadRecipe(recipeId) {
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
     };
-    console.log(state.recipe);
   } catch (err) {
     throw err;
   }
