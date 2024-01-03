@@ -1,7 +1,10 @@
 import * as model from './model.js';
+
 import recipeView from './views/recipeView.js'; // recipeView will be the object created in the view
 import searchView from './views/searchView.js';
 import resultsView from './views/resultsView.js';
+import paginationView from './views/paginationView.js';
+
 import 'core-js/stable'; // polifill latest js feature
 import 'regenerator-runtime/runtime'; // polifill async await
 
@@ -43,14 +46,24 @@ async function controlSearchResults() {
     await model.loadSearchResults(query);
 
     resultsView.render(model.getSearchResultsPage());
+    paginationView.render(model.state.search);
   } catch (err) {
     resultsView.renderError(err.message);
   }
 }
 
+function controlPagination(page) {
+  // loading the search results for the given page number and
+  // rendering it on the screen
+  resultsView.render(model.getSearchResultsPage(page));
+  // rendering pagination button based on current page
+  paginationView.render(model.state.search);
+}
+
 function init() {
   recipeView.addHandlerRender(controlRecipe);
   searchView.addHandlerSearch(controlSearchResults);
+  paginationView.addHandlerClick(controlPagination);
 }
 
 init();
