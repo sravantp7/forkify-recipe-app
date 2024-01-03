@@ -628,8 +628,13 @@ function controlPagination(page) {
     // rendering pagination button based on current page
     (0, _paginationViewJsDefault.default).render(_modelJs.state.search);
 }
+function controlServings(newServingS) {
+    _modelJs.updateServings(newServingS);
+    (0, _recipeViewJsDefault.default).render(_modelJs.state.recipe);
+}
 function init() {
     (0, _recipeViewJsDefault.default).addHandlerRender(controlRecipe);
+    (0, _recipeViewJsDefault.default).addHandlerUpdateServings(controlServings);
     (0, _searchViewJsDefault.default).addHandlerSearch(controlSearchResults);
     (0, _paginationViewJsDefault.default).addHandlerClick(controlPagination);
 }
@@ -1875,6 +1880,8 @@ parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
 parcelHelpers.export(exports, "loadSearchResults", ()=>loadSearchResults);
 // function that will return data from the recipies array according to page number
 parcelHelpers.export(exports, "getSearchResultsPage", ()=>getSearchResultsPage);
+// function that update the servings
+parcelHelpers.export(exports, "updateServings", ()=>updateServings);
 var _configJs = require("./config.js");
 var _helpersJs = require("./helpers.js");
 const state = {
@@ -1901,6 +1908,7 @@ async function loadRecipe(recipeId) {
             cookingTime: recipe.cooking_time,
             ingredients: recipe.ingredients
         };
+        console.log(state.recipe);
     } catch (err) {
         throw err;
     }
@@ -1929,6 +1937,13 @@ function getSearchResultsPage(page = state.search.page) {
     const start = (page - 1) * state.search.resultsPerPage;
     const end = page * state.search.resultsPerPage;
     return state.search.results.slice(start, end);
+}
+function updateServings(newServings) {
+    state.recipe?.ingredients.forEach((ingredient)=>{
+        // newQuantity = oldQuantity * newServings / oldServings
+        ingredient.quantity = ingredient.quantity * newServings / state.recipe.servings;
+    });
+    state.recipe.servings = newServings;
 }
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config.js":"k5Hzs","./helpers.js":"hGI1E"}],"gkKU3":[function(require,module,exports) {
@@ -2602,6 +2617,14 @@ class RecipeView extends (0, _viewJsDefault.default) {
             "load"
         ].forEach((ev)=>window.addEventListener(ev, handler));
     }
+    addHandlerUpdateServings(handler) {
+        this._parentElement.addEventListener("click", (e)=>{
+            const btn = e.target.closest(".btn--tiny");
+            const newServings = Number(btn.getAttribute("data")) > 0 ? Number(btn.getAttribute("data")) : 1;
+            if (!btn) return; // because btn will be null if we click other than mentioned btn
+            handler(newServings);
+        });
+    }
     // private method which will generate html
     _generateMarkup() {
         return `
@@ -2615,40 +2638,40 @@ class RecipeView extends (0, _viewJsDefault.default) {
         <div class="recipe__details">
             <div class="recipe__info">
                 <svg class="recipe__info-icon">
-                <use href="${0, _iconsSvgDefault.default}#icon-clock"></use>
+                    <use href="${0, _iconsSvgDefault.default}#icon-clock"></use>
                 </svg>
                 <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime}</span>
                 <span class="recipe__info-text">minutes</span>
             </div>
             <div class="recipe__info">
                 <svg class="recipe__info-icon">
-                <use href="${0, _iconsSvgDefault.default}#icon-users"></use>
+                    <use href="${0, _iconsSvgDefault.default}#icon-users"></use>
                 </svg>
                 <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>
                 <span class="recipe__info-text">servings</span>
 
                 <div class="recipe__info-buttons">
-                <button class="btn--tiny btn--increase-servings">
-                    <svg>
-                    <use href="${0, _iconsSvgDefault.default}#icon-minus-circle"></use>
-                    </svg>
-                </button>
-                <button class="btn--tiny btn--increase-servings">
-                    <svg>
-                    <use href="${0, _iconsSvgDefault.default}#icon-plus-circle"></use>
-                    </svg>
-                </button>
+                    <button class="btn--tiny btn--decrease-servings" data="${this._data.servings - 1}">
+                        <svg>
+                            <use href="${0, _iconsSvgDefault.default}#icon-minus-circle"></use>
+                        </svg>
+                    </button>
+                    <button class="btn--tiny btn--increase-servings" data="${this._data.servings + 1}">
+                        <svg>
+                            <use href="${0, _iconsSvgDefault.default}#icon-plus-circle"></use>
+                        </svg>
+                    </button>
                 </div>
             </div>
 
             <div class="recipe__user-generated">
                 <svg>
-                <use href="${0, _iconsSvgDefault.default}#icon-user"></use>
+                    <use href="${0, _iconsSvgDefault.default}#icon-user"></use>
                 </svg>
             </div>
             <button class="btn--round">
                 <svg class="">
-                <use href="${0, _iconsSvgDefault.default}#icon-bookmark-fill"></use>
+                    <use href="${0, _iconsSvgDefault.default}#icon-bookmark-fill"></use>
                 </svg>
             </button>
         </div>
@@ -2684,11 +2707,11 @@ class RecipeView extends (0, _viewJsDefault.default) {
         return `
         <li class="recipe__ingredient">
             <svg class="recipe__icon">
-            <use href="${0, _iconsSvgDefault.default}#icon-check"></use>
+                <use href="${0, _iconsSvgDefault.default}#icon-check"></use>
             </svg>
             <div class="recipe__quantity">${ingredient.quantity ? (0, _fractyDefault.default)(ingredient.quantity) : ""}</div>
             <div class="recipe__description">
-            <span class="recipe__unit">${ingredient.unit}</span>
+                <span class="recipe__unit">${ingredient.unit}</span>
             ${ingredient.description}
             </div>
         </li>`;

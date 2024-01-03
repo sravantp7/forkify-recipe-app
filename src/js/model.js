@@ -30,6 +30,7 @@ export async function loadRecipe(recipeId) {
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
     };
+    console.log(state.recipe);
   } catch (err) {
     throw err;
   }
@@ -68,4 +69,15 @@ export function getSearchResultsPage(page = state.search.page) {
   const end = page * state.search.resultsPerPage;
 
   return state.search.results.slice(start, end);
+}
+
+// function that update the servings
+export function updateServings(newServings) {
+  state.recipe?.ingredients.forEach(ingredient => {
+    // newQuantity = oldQuantity * newServings / oldServings
+    ingredient.quantity =
+      (ingredient.quantity * newServings) / state.recipe.servings;
+  });
+
+  state.recipe.servings = newServings;
 }

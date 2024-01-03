@@ -11,6 +11,21 @@ class RecipeView extends View {
     ['hashchange', 'load'].forEach(ev => window.addEventListener(ev, handler));
   }
 
+  addHandlerUpdateServings(handler) {
+    this._parentElement.addEventListener('click', e => {
+      const btn = e.target.closest('.btn--tiny');
+
+      const newServings =
+        Number(btn.getAttribute('data')) > 0
+          ? Number(btn.getAttribute('data'))
+          : 1;
+
+      if (!btn) return; // because btn will be null if we click other than mentioned btn
+
+      handler(newServings);
+    });
+  }
+
   // private method which will generate html
   _generateMarkup() {
     return `
@@ -24,7 +39,7 @@ class RecipeView extends View {
         <div class="recipe__details">
             <div class="recipe__info">
                 <svg class="recipe__info-icon">
-                <use href="${icons}#icon-clock"></use>
+                    <use href="${icons}#icon-clock"></use>
                 </svg>
                 <span class="recipe__info-data recipe__info-data--minutes">${
                   this._data.cookingTime
@@ -33,7 +48,7 @@ class RecipeView extends View {
             </div>
             <div class="recipe__info">
                 <svg class="recipe__info-icon">
-                <use href="${icons}#icon-users"></use>
+                    <use href="${icons}#icon-users"></use>
                 </svg>
                 <span class="recipe__info-data recipe__info-data--people">${
                   this._data.servings
@@ -41,27 +56,31 @@ class RecipeView extends View {
                 <span class="recipe__info-text">servings</span>
 
                 <div class="recipe__info-buttons">
-                <button class="btn--tiny btn--increase-servings">
-                    <svg>
-                    <use href="${icons}#icon-minus-circle"></use>
-                    </svg>
-                </button>
-                <button class="btn--tiny btn--increase-servings">
-                    <svg>
-                    <use href="${icons}#icon-plus-circle"></use>
-                    </svg>
-                </button>
+                    <button class="btn--tiny btn--decrease-servings" data="${
+                      this._data.servings - 1
+                    }">
+                        <svg>
+                            <use href="${icons}#icon-minus-circle"></use>
+                        </svg>
+                    </button>
+                    <button class="btn--tiny btn--increase-servings" data="${
+                      this._data.servings + 1
+                    }">
+                        <svg>
+                            <use href="${icons}#icon-plus-circle"></use>
+                        </svg>
+                    </button>
                 </div>
             </div>
 
             <div class="recipe__user-generated">
                 <svg>
-                <use href="${icons}#icon-user"></use>
+                    <use href="${icons}#icon-user"></use>
                 </svg>
             </div>
             <button class="btn--round">
                 <svg class="">
-                <use href="${icons}#icon-bookmark-fill"></use>
+                    <use href="${icons}#icon-bookmark-fill"></use>
                 </svg>
             </button>
         </div>
@@ -102,13 +121,13 @@ class RecipeView extends View {
     return `
         <li class="recipe__ingredient">
             <svg class="recipe__icon">
-            <use href="${icons}#icon-check"></use>
+                <use href="${icons}#icon-check"></use>
             </svg>
             <div class="recipe__quantity">${
               ingredient.quantity ? fracty(ingredient.quantity) : ''
             }</div>
             <div class="recipe__description">
-            <span class="recipe__unit">${ingredient.unit}</span>
+                <span class="recipe__unit">${ingredient.unit}</span>
             ${ingredient.description}
             </div>
         </li>`;
