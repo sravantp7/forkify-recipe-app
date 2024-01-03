@@ -586,7 +586,9 @@ var _resultsViewJs = require("./views/resultsView.js");
 var _resultsViewJsDefault = parcelHelpers.interopDefault(_resultsViewJs);
 var _runtime = require("regenerator-runtime/runtime"); // polifill async await
 // parcel settings to persist data even when we reload the dev server
-if (module.hot) module.hot.accept();
+// if (module.hot) {
+//   module.hot.accept();
+// }
 // Function that displays recipe inside the container.
 async function controlRecipe() {
     try {
@@ -611,7 +613,7 @@ async function controlSearchResults() {
         const query = (0, _searchViewJsDefault.default).getQuery();
         if (!query) return;
         await _modelJs.loadSearchResults(query);
-        (0, _resultsViewJsDefault.default).render(_modelJs.state.search.results); // passing array of recipies
+        (0, _resultsViewJsDefault.default).render(_modelJs.getSearchResultsPage());
     } catch (err) {
         (0, _resultsViewJsDefault.default).renderError(err.message);
     }
@@ -1860,13 +1862,17 @@ parcelHelpers.export(exports, "state", ()=>state);
 // function that fetches data from forkify api
 parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
 parcelHelpers.export(exports, "loadSearchResults", ()=>loadSearchResults);
+// function that will return data from the recipies array according to page number
+parcelHelpers.export(exports, "getSearchResultsPage", ()=>getSearchResultsPage);
 var _configJs = require("./config.js");
 var _helpersJs = require("./helpers.js");
 const state = {
     recipe: {},
     search: {
         query: "",
-        results: []
+        results: [],
+        page: 1,
+        resultsPerPage: (0, _configJs.RESULTS_PER_PAGE)
     }
 };
 async function loadRecipe(recipeId) {
@@ -1907,6 +1913,12 @@ async function loadSearchResults(query) {
         throw err;
     }
 }
+function getSearchResultsPage(page = state.search.page) {
+    state.search.page = page;
+    const start = (page - 1) * state.search.resultsPerPage;
+    const end = page * state.search.resultsPerPage;
+    return state.search.results.slice(start, end);
+}
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config.js":"k5Hzs","./helpers.js":"hGI1E"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {
@@ -1943,8 +1955,10 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FORKIFY_API", ()=>FORKIFY_API);
 parcelHelpers.export(exports, "TIMEOUT_SEC", ()=>TIMEOUT_SEC);
+parcelHelpers.export(exports, "RESULTS_PER_PAGE", ()=>RESULTS_PER_PAGE);
 const FORKIFY_API = "https://forkify-api.herokuapp.com/api/v2/recipes";
 const TIMEOUT_SEC = 10; // time after which the fetch request will timeout
+const RESULTS_PER_PAGE = 10;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hGI1E":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");

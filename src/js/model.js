@@ -1,4 +1,4 @@
-import { FORKIFY_API } from './config.js';
+import { FORKIFY_API, RESULTS_PER_PAGE } from './config.js';
 import { getJSON } from './helpers.js';
 
 // gobal state which holds the data
@@ -7,6 +7,8 @@ export const state = {
   search: {
     query: '',
     results: [],
+    page: 1,
+    resultsPerPage: RESULTS_PER_PAGE,
   },
 };
 
@@ -56,4 +58,14 @@ export async function loadSearchResults(query) {
   } catch (err) {
     throw err;
   }
+}
+
+// function that will return data from the recipies array according to page number
+export function getSearchResultsPage(page = state.search.page) {
+  state.search.page = page;
+
+  const start = (page - 1) * state.search.resultsPerPage;
+  const end = page * state.search.resultsPerPage;
+
+  return state.search.results.slice(start, end);
 }

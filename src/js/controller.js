@@ -6,9 +6,9 @@ import 'core-js/stable'; // polifill latest js feature
 import 'regenerator-runtime/runtime'; // polifill async await
 
 // parcel settings to persist data even when we reload the dev server
-if (module.hot) {
-  module.hot.accept();
-}
+// if (module.hot) {
+//   module.hot.accept();
+// }
 
 // Function that displays recipe inside the container.
 async function controlRecipe() {
@@ -42,7 +42,7 @@ async function controlSearchResults() {
 
     await model.loadSearchResults(query);
 
-    resultsView.render(model.state.search.results); // passing array of recipies
+    resultsView.render(model.getSearchResultsPage());
   } catch (err) {
     resultsView.renderError(err.message);
   }
