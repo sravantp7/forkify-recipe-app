@@ -599,6 +599,7 @@ async function controlRecipe() {
         if (!recipeId) return;
         // displaying spinner (once the data is loaded we will clear the container and attach data)
         (0, _recipeViewJsDefault.default).renderSpinner();
+        (0, _resultsViewJsDefault.default).update(_modelJs.getSearchResultsPage());
         // calling function to fetch data from recipe details
         await _modelJs.loadRecipe(recipeId);
         // Rendering recipe details using view
@@ -2777,8 +2778,11 @@ class View {
     _clear() {
         this._parentElement.innerHTML = "";
     }
+    // update the recipe detais without re-rendering the entire detais.
     update(data) {
-        if (!data || data.length === 0) return this.renderError();
+        // if (!data || data.length === 0) {
+        //   return this.renderError();
+        // }
         this._data = data;
         const newMarkup = this._generateMarkup();
         // Converting html string data to dom objects
@@ -2958,9 +2962,10 @@ var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
 class ResultsView extends (0, _viewJsDefault.default) {
     _parentElement = document.querySelector(".results");
     _generateMarkup() {
-        return this._data.map((recipe)=>`
-            <li class="preview">
-                <a class="preview__link" href="#${recipe.id}">
+        return this._data.map((recipe)=>{
+            const id = window.location.hash.slice(1);
+            return `<li class="preview">
+                <a class="preview__link ${id === recipe.id ? "preview__link--active" : ""}" href="#${recipe.id}">
                 <figure class="preview__fig">
                     <img src="${recipe.image}" alt="${recipe.title}" />
                 </figure>
@@ -2969,7 +2974,8 @@ class ResultsView extends (0, _viewJsDefault.default) {
                     <p class="preview__publisher">${recipe.publisher}</p>
                 </div>
                 </a>
-            </li>`).join(""); // combining the markups to a single text data
+            </li>`;
+        }).join(""); // combining the markups to a single text data
     }
 }
 exports.default = new ResultsView();

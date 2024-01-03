@@ -24,6 +24,8 @@ async function controlRecipe() {
     // displaying spinner (once the data is loaded we will clear the container and attach data)
     recipeView.renderSpinner();
 
+    resultsView.update(model.getSearchResultsPage());
+
     // calling function to fetch data from recipe details
     await model.loadRecipe(recipeId);
 

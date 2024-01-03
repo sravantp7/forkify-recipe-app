@@ -19,10 +19,11 @@ export default class View {
     this._parentElement.innerHTML = '';
   }
 
+  // update the recipe detais without re-rendering the entire detais.
   update(data) {
-    if (!data || data.length === 0) {
-      return this.renderError();
-    }
+    // if (!data || data.length === 0) {
+    //   return this.renderError();
+    // }
 
     this._data = data;
     const newMarkup = this._generateMarkup();
