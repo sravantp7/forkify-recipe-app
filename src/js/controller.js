@@ -5,6 +5,7 @@ import searchView from './views/searchView.js';
 import resultsView from './views/resultsView.js';
 import paginationView from './views/paginationView.js';
 import bookmarksView from './views/bookmarksView.js';
+import addRecipeView from './views/addRecipeView.js';
 
 import 'core-js/stable'; // polifill latest js feature
 import 'regenerator-runtime/runtime'; // polifill async await
@@ -45,10 +46,11 @@ async function controlRecipe() {
 // function that fetches recipes
 async function controlSearchResults() {
   try {
-    resultsView.renderSpinner();
     const query = searchView.getQuery();
 
     if (!query) return;
+
+    resultsView.renderSpinner();
 
     await model.loadSearchResults(query);
 
@@ -88,12 +90,17 @@ function controlAddBookmark() {
   recipeView.update(model.state.recipe);
 }
 
+export function controlAddRecipe(newRecipe) {
+  model.uploadNewRecipe(newRecipe);
+}
+
 function init() {
   recipeView.addHandlerRender(controlRecipe);
   recipeView.addHandlerUpdateServings(controlServings);
   recipeView.addHandlerBookmark(controlAddBookmark);
   searchView.addHandlerSearch(controlSearchResults);
   paginationView.addHandlerClick(controlPagination);
+  addRecipeView.addHandlerUpload(controlAddRecipe);
 }
 
 init();

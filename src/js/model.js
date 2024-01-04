@@ -117,6 +117,11 @@ export function deleteBookmark(id) {
   storeBookmarks();
 }
 
+// function which upload new recipe to the API
+export async function uploadNewRecipe(newRecipe) {
+  console.log(newRecipe);
+}
+
 function init() {
   const bookmarkedData = window.localStorage.getItem('bookmarks');
   if (bookmarkedData) {
@@ -125,5 +130,3 @@ function init() {
 }
 
 init();
-
-console.log(state.bookmarks);
