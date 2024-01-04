@@ -606,7 +606,7 @@ async function controlRecipe() {
         await _modelJs.loadRecipe(recipeId);
         // Rendering recipe details using view
         (0, _recipeViewJsDefault.default).render(_modelJs.state.recipe);
-        (0, _bookmarksViewJsDefault.default).render(_modelJs.state.bookmarks);
+        if (_modelJs.state.bookmarks.length > 0) (0, _bookmarksViewJsDefault.default).render(_modelJs.state.bookmarks);
     } catch (err) {
         // invoking render error method in the recipe view
         (0, _recipeViewJsDefault.default).renderError();

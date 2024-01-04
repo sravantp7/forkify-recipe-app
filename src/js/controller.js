@@ -33,7 +33,9 @@ async function controlRecipe() {
     // Rendering recipe details using view
     recipeView.render(model.state.recipe);
 
-    bookmarksView.render(model.state.bookmarks);
+    if (model.state.bookmarks.length > 0) {
+      bookmarksView.render(model.state.bookmarks);
+    }
   } catch (err) {
     // invoking render error method in the recipe view
     recipeView.renderError();
