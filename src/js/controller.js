@@ -70,8 +70,13 @@ function controlServings(newServingS) {
 }
 
 function controlAddBookmark() {
-  model.addBookmark(model.state.recipe);
-
+  if (!model.state.recipe.bookmarked) {
+    model.addBookmark(model.state.recipe);
+  }
+  // deleting bookmark if it is already bookmarked
+  else if (model.state.recipe.bookmarked) {
+    model.deleteBookmark(model.state.recipe.id);
+  }
   // re-rendering the view after updating the state
   recipeView.update(model.state.recipe);
 }

@@ -636,7 +636,8 @@ function controlServings(newServingS) {
     (0, _recipeViewJsDefault.default).update(_modelJs.state.recipe);
 }
 function controlAddBookmark() {
-    _modelJs.addBookmark(_modelJs.state.recipe);
+    if (!_modelJs.state.recipe.bookmarked) _modelJs.addBookmark(_modelJs.state.recipe);
+    else if (_modelJs.state.recipe.bookmarked) _modelJs.deleteBookmark(_modelJs.state.recipe.id);
     // re-rendering the view after updating the state
     (0, _recipeViewJsDefault.default).update(_modelJs.state.recipe);
 }
@@ -1964,10 +1965,11 @@ function addBookmark(recipe) {
     // adding new recipe to bookmarks
     state.bookmarks.push(recipe);
     if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
-    console.log(state);
 }
 function deleteBookmark(id) {
+    //  delete bookmark
     state.bookmarks = state.bookmarks.filter((bookmark)=>bookmark.id !== id);
+    if (state.recipe.id == id) state.recipe.bookmarked = false;
 }
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config.js":"k5Hzs","./helpers.js":"hGI1E"}],"gkKU3":[function(require,module,exports) {

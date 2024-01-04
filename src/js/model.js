@@ -98,10 +98,13 @@ export function addBookmark(recipe) {
   if (recipe.id === state.recipe.id) {
     state.recipe.bookmarked = true;
   }
-
-  console.log(state);
 }
 
 export function deleteBookmark(id) {
+  //  delete bookmark
   state.bookmarks = state.bookmarks.filter(bookmark => bookmark.id !== id);
+
+  if (state.recipe.id == id) {
+    state.recipe.bookmarked = false;
+  }
 }
