@@ -69,9 +69,17 @@ function controlServings(newServingS) {
   recipeView.update(model.state.recipe);
 }
 
+function controlAddBookmark() {
+  model.addBookmark(model.state.recipe);
+
+  // re-rendering the view after updating the state
+  recipeView.update(model.state.recipe);
+}
+
 function init() {
   recipeView.addHandlerRender(controlRecipe);
   recipeView.addHandlerUpdateServings(controlServings);
+  recipeView.addHandlerBookmark(controlAddBookmark);
   searchView.addHandlerSearch(controlSearchResults);
   paginationView.addHandlerClick(controlPagination);
 }

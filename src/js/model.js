@@ -3,13 +3,14 @@ import { getJSON } from './helpers.js';
 
 // gobal state which holds the data
 export const state = {
-  recipe: {},
+  recipe: {}, // holds currently displaying recipe
   search: {
     query: '',
     results: [],
     page: 1,
     resultsPerPage: RESULTS_PER_PAGE,
   },
+  bookmarks: [],
 };
 
 // function that fetches data from forkify api
@@ -30,6 +31,12 @@ export async function loadRecipe(recipeId) {
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
     };
+
+    if (state.bookmarks.some(bookmark => bookmark.id == recipeId)) {
+      state.recipe.bookmarked = true;
+    } else {
+      state.recipe.bookmarked = false;
+    }
   } catch (err) {
     throw err;
   }
@@ -55,6 +62,9 @@ export async function loadSearchResults(query) {
         title: recipe.title,
       };
     });
+
+    // resetting page on each new search
+    state.search.page = 1;
   } catch (err) {
     throw err;
   }
@@ -79,4 +89,19 @@ export function updateServings(newServings) {
   });
 
   state.recipe.servings = newServings;
+}
+
+export function addBookmark(recipe) {
+  // adding new recipe to bookmarks
+  state.bookmarks.push(recipe);
+
+  if (recipe.id === state.recipe.id) {
+    state.recipe.bookmarked = true;
+  }
+
+  console.log(state);
+}
+
+export function deleteBookmark(id) {
+  state.bookmarks = state.bookmarks.filter(bookmark => bookmark.id !== id);
 }
