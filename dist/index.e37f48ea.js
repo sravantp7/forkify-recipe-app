@@ -602,11 +602,11 @@ async function controlRecipe() {
         // displaying spinner (once the data is loaded we will clear the container and attach data)
         (0, _recipeViewJsDefault.default).renderSpinner();
         (0, _resultsViewJsDefault.default).update(_modelJs.getSearchResultsPage());
-        (0, _bookmarksViewJsDefault.default).update(_modelJs.state.bookmarks);
         // calling function to fetch data from recipe details
         await _modelJs.loadRecipe(recipeId);
         // Rendering recipe details using view
         (0, _recipeViewJsDefault.default).render(_modelJs.state.recipe);
+        (0, _bookmarksViewJsDefault.default).render(_modelJs.state.bookmarks);
     } catch (err) {
         // invoking render error method in the recipe view
         (0, _recipeViewJsDefault.default).renderError();
@@ -1965,16 +1965,27 @@ function updateServings(newServings) {
     });
     state.recipe.servings = newServings;
 }
+function storeBookmarks() {
+    window.localStorage.setItem("bookmarks", JSON.stringify(state.bookmarks));
+}
 function addBookmark(recipe) {
     // adding new recipe to bookmarks
     state.bookmarks.push(recipe);
     if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
+    storeBookmarks();
 }
 function deleteBookmark(id) {
     //  delete bookmark
     state.bookmarks = state.bookmarks.filter((bookmark)=>bookmark.id !== id);
     if (state.recipe.id == id) state.recipe.bookmarked = false;
+    storeBookmarks();
 }
+function init() {
+    const bookmarkedData = window.localStorage.getItem("bookmarks");
+    if (bookmarkedData) state.bookmarks = JSON.parse(bookmarkedData);
+}
+init();
+console.log(state.bookmarks);
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config.js":"k5Hzs","./helpers.js":"hGI1E"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {

@@ -26,13 +26,14 @@ async function controlRecipe() {
     recipeView.renderSpinner();
 
     resultsView.update(model.getSearchResultsPage());
-    bookmarksView.update(model.state.bookmarks);
 
     // calling function to fetch data from recipe details
     await model.loadRecipe(recipeId);
 
     // Rendering recipe details using view
     recipeView.render(model.state.recipe);
+
+    bookmarksView.render(model.state.bookmarks);
   } catch (err) {
     // invoking render error method in the recipe view
     recipeView.renderError();
