@@ -4,6 +4,7 @@ import recipeView from './views/recipeView.js'; // recipeView will be the object
 import searchView from './views/searchView.js';
 import resultsView from './views/resultsView.js';
 import paginationView from './views/paginationView.js';
+import bookmarksView from './views/bookmarksView.js';
 
 import 'core-js/stable'; // polifill latest js feature
 import 'regenerator-runtime/runtime'; // polifill async await
@@ -25,6 +26,7 @@ async function controlRecipe() {
     recipeView.renderSpinner();
 
     resultsView.update(model.getSearchResultsPage());
+    bookmarksView.update(model.state.bookmarks);
 
     // calling function to fetch data from recipe details
     await model.loadRecipe(recipeId);
@@ -77,6 +79,8 @@ function controlAddBookmark() {
   else if (model.state.recipe.bookmarked) {
     model.deleteBookmark(model.state.recipe.id);
   }
+
+  bookmarksView.render(model.state.bookmarks);
   // re-rendering the view after updating the state
   recipeView.update(model.state.recipe);
 }
