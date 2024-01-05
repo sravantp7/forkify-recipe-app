@@ -1,5 +1,5 @@
-import { FORKIFY_API, RESULTS_PER_PAGE } from './config.js';
-import { getJSON } from './helpers.js';
+import { FORKIFY_API, RESULTS_PER_PAGE, API_KEY } from './config.js';
+import { getJSON, sendJSON } from './helpers.js';
 
 // gobal state which holds the data
 export const state = {
@@ -13,24 +13,29 @@ export const state = {
   bookmarks: [],
 };
 
+function createRecipeObject(data) {
+  const { recipe } = data.data;
+
+  // modifying state object
+  return {
+    id: recipe.id,
+    title: recipe.title,
+    publisher: recipe.publisher,
+    sourceUrl: recipe.source_url,
+    image: recipe.image_url,
+    servings: recipe.servings,
+    cookingTime: recipe.cooking_time,
+    ingredients: recipe.ingredients,
+    ...(recipe.key && { key: recipe.key }),
+  };
+}
+
 // function that fetches data from forkify api
 export async function loadRecipe(recipeId) {
   try {
     const data = await getJSON(`${FORKIFY_API}/${recipeId}`);
 
-    const { recipe } = data.data;
-
-    // modifying state object
-    state.recipe = {
-      id: recipe.id,
-      title: recipe.title,
-      publisher: recipe.publisher,
-      sourceUrl: recipe.source_url,
-      image: recipe.image_url,
-      servings: recipe.servings,
-      cookingTime: recipe.cooking_time,
-      ingredients: recipe.ingredients,
-    };
+    state.recipe = createRecipeObject(data);
 
     if (state.bookmarks.some(bookmark => bookmark.id == recipeId)) {
       state.recipe.bookmarked = true;
@@ -118,8 +123,50 @@ export function deleteBookmark(id) {
 }
 
 // function which upload new recipe to the API
-export async function uploadNewRecipe(newRecipe) {
-  console.log(newRecipe);
+export async function uploadRecipe(newRecipe) {
+  try {
+    // extracting required data  from the new recipe
+    const ingredients = Object.entries(newRecipe)
+      .filter(entry => entry[0].includes('ingredient') && entry[1] !== '')
+      // forming array off objects for ingredients as per the api
+      .map(ing => {
+        const ingData = ing[1].split(',');
+
+        if (ingData.length !== 3) {
+          throw new Error(
+            'Wrong ingredient format, Please use the correct format'
+          );
+        }
+        const [quantity, unit, description] = ingData;
+
+        return {
+          quantity: quantity === '' ? null : Number(quantity.trim()),
+          unit: unit.trim(),
+          description: description.trim(),
+        };
+      });
+
+    // data that need to upload with the required property name
+    newRecipe = {
+      title: newRecipe.title,
+      publisher: newRecipe.publisher,
+      source_url: newRecipe.sourceUrl,
+      image_url: newRecipe.image,
+      servings: Number(newRecipe.servings),
+      cooking_time: Number(newRecipe.cookingTime),
+      ingredients: ingredients,
+    };
+
+    // uploading new recipe data to the api
+    const data = await sendJSON(`${FORKIFY_API}?key=${API_KEY}`, newRecipe);
+    console.log(data);
+
+    state.recipe = createRecipeObject(data);
+
+    addBookmark(state.recipe);
+  } catch (error) {
+    throw error;
+  }
 }
 
 function init() {

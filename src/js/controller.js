@@ -90,8 +90,23 @@ function controlAddBookmark() {
   recipeView.update(model.state.recipe);
 }
 
-export function controlAddRecipe(newRecipe) {
-  model.uploadNewRecipe(newRecipe);
+export async function controlAddRecipe(newRecipe) {
+  try {
+    addRecipeView.renderSpinner();
+
+    await model.uploadRecipe(newRecipe);
+
+    // rendering the new recipe
+    recipeView.render(model.state.recipe);
+
+    addRecipeView.renderMessage('Successfully uploaded the new recipe');
+    // closing the form window
+    setTimeout(() => {
+      addRecipeView.toggleWindow();
+    }, 2000);
+  } catch (err) {
+    addRecipeView.renderError(err.message);
+  }
 }
 
 function init() {

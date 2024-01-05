@@ -649,8 +649,20 @@ function controlAddBookmark() {
     // re-rendering the view after updating the state
     (0, _recipeViewJsDefault.default).update(_modelJs.state.recipe);
 }
-function controlAddRecipe(newRecipe) {
-    _modelJs.uploadNewRecipe(newRecipe);
+async function controlAddRecipe(newRecipe) {
+    try {
+        (0, _addRecipeViewJsDefault.default).renderSpinner();
+        await _modelJs.uploadRecipe(newRecipe);
+        // rendering the new recipe
+        (0, _recipeViewJsDefault.default).render(_modelJs.state.recipe);
+        (0, _addRecipeViewJsDefault.default).renderMessage("Successfully uploaded the new recipe");
+        // closing the form window
+        setTimeout(()=>{
+            (0, _addRecipeViewJsDefault.default).toggleWindow();
+        }, 2000);
+    } catch (err) {
+        (0, _addRecipeViewJsDefault.default).renderError(err.message);
+    }
 }
 function init() {
     (0, _recipeViewJsDefault.default).addHandlerRender(controlRecipe);
@@ -1907,7 +1919,7 @@ parcelHelpers.export(exports, "updateServings", ()=>updateServings);
 parcelHelpers.export(exports, "addBookmark", ()=>addBookmark);
 parcelHelpers.export(exports, "deleteBookmark", ()=>deleteBookmark);
 // function which upload new recipe to the API
-parcelHelpers.export(exports, "uploadNewRecipe", ()=>uploadNewRecipe);
+parcelHelpers.export(exports, "uploadRecipe", ()=>uploadRecipe);
 var _configJs = require("./config.js");
 var _helpersJs = require("./helpers.js");
 const state = {
@@ -1920,21 +1932,27 @@ const state = {
     },
     bookmarks: []
 };
+function createRecipeObject(data) {
+    const { recipe } = data.data;
+    // modifying state object
+    return {
+        id: recipe.id,
+        title: recipe.title,
+        publisher: recipe.publisher,
+        sourceUrl: recipe.source_url,
+        image: recipe.image_url,
+        servings: recipe.servings,
+        cookingTime: recipe.cooking_time,
+        ingredients: recipe.ingredients,
+        ...recipe.key && {
+            key: recipe.key
+        }
+    };
+}
 async function loadRecipe(recipeId) {
     try {
         const data = await (0, _helpersJs.getJSON)(`${(0, _configJs.FORKIFY_API)}/${recipeId}`);
-        const { recipe } = data.data;
-        // modifying state object
-        state.recipe = {
-            id: recipe.id,
-            title: recipe.title,
-            publisher: recipe.publisher,
-            sourceUrl: recipe.source_url,
-            image: recipe.image_url,
-            servings: recipe.servings,
-            cookingTime: recipe.cooking_time,
-            ingredients: recipe.ingredients
-        };
+        state.recipe = createRecipeObject(data);
         if (state.bookmarks.some((bookmark)=>bookmark.id == recipeId)) state.recipe.bookmarked = true;
         else state.recipe.bookmarked = false;
     } catch (err) {
@@ -1990,8 +2008,38 @@ function deleteBookmark(id) {
     if (state.recipe.id == id) state.recipe.bookmarked = false;
     storeBookmarks();
 }
-async function uploadNewRecipe(newRecipe) {
-    console.log(newRecipe);
+async function uploadRecipe(newRecipe) {
+    try {
+        // extracting required data  from the new recipe
+        const ingredients = Object.entries(newRecipe).filter((entry)=>entry[0].includes("ingredient") && entry[1] !== "")// forming array off objects for ingredients as per the api
+        .map((ing)=>{
+            const ingData = ing[1].split(",");
+            if (ingData.length !== 3) throw new Error("Wrong ingredient format, Please use the correct format");
+            const [quantity, unit, description] = ingData;
+            return {
+                quantity: quantity === "" ? null : Number(quantity.trim()),
+                unit: unit.trim(),
+                description: description.trim()
+            };
+        });
+        // data that need to upload with the required property name
+        newRecipe = {
+            title: newRecipe.title,
+            publisher: newRecipe.publisher,
+            source_url: newRecipe.sourceUrl,
+            image_url: newRecipe.image,
+            servings: Number(newRecipe.servings),
+            cooking_time: Number(newRecipe.cookingTime),
+            ingredients: ingredients
+        };
+        // uploading new recipe data to the api
+        const data = await (0, _helpersJs.sendJSON)(`${(0, _configJs.FORKIFY_API)}?key=${(0, _configJs.API_KEY)}`, newRecipe);
+        console.log(data);
+        state.recipe = createRecipeObject(data);
+        addBookmark(state.recipe);
+    } catch (error) {
+        throw error;
+    }
 }
 function init() {
     const bookmarkedData = window.localStorage.getItem("bookmarks");
@@ -2035,15 +2083,19 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FORKIFY_API", ()=>FORKIFY_API);
 parcelHelpers.export(exports, "TIMEOUT_SEC", ()=>TIMEOUT_SEC);
 parcelHelpers.export(exports, "RESULTS_PER_PAGE", ()=>RESULTS_PER_PAGE);
+parcelHelpers.export(exports, "API_KEY", ()=>API_KEY);
 const FORKIFY_API = "https://forkify-api.herokuapp.com/api/v2/recipes";
 const TIMEOUT_SEC = 10; // time after which the fetch request will timeout
 const RESULTS_PER_PAGE = 12;
+const API_KEY = "0d6ee7ee-90a1-4e30-bd90-f455ed70f5c4";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hGI1E":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 // function that fetch data from the given URL and return it
 parcelHelpers.export(exports, "getJSON", ()=>getJSON);
+// function that uploads the data to the api
+parcelHelpers.export(exports, "sendJSON", ()=>sendJSON);
 var _configJs = require("./config.js");
 function timeout(s) {
     return new Promise((_, reject)=>{
@@ -2063,6 +2115,26 @@ async function getJSON(url) {
         return data;
     } catch (err) {
         throw err; // makes the promise rejected state
+    }
+}
+async function sendJSON(url, uploadData) {
+    try {
+        const fetchPro = fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(uploadData)
+        });
+        const res = await Promise.race([
+            fetchPro,
+            timeout((0, _configJs.TIMEOUT_SEC))
+        ]);
+        const data = await res.json();
+        if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+        return data;
+    } catch (err) {
+        throw err;
     }
 }
 
@@ -3126,8 +3198,6 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _viewJs = require("./View.js");
 var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
-var _iconsSvg = require("url:../../img/icons.svg");
-var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 class AddRecipeView extends (0, _viewJsDefault.default) {
     _parentElement = document.querySelector(".upload");
     _window = document.querySelector(".add-recipe-window");
@@ -3138,16 +3208,18 @@ class AddRecipeView extends (0, _viewJsDefault.default) {
         super();
         this._addHandlerShowWindow();
     }
+    toggleWindow() {
+        this._overlay.classList.toggle("hidden");
+        this._window.classList.toggle("hidden");
+    }
     _addHandlerShowWindow() {
         this._btnOpen.addEventListener("click", (e)=>{
             // open the add recipe page
-            this._overlay.classList.remove("hidden");
-            this._window.classList.remove("hidden");
+            this.toggleWindow();
         });
         this._btnClose.addEventListener("click", (e)=>{
             // close the recipe page when clicking on the close button
-            this._overlay.classList.add("hidden");
-            this._window.classList.add("hidden");
+            this.toggleWindow();
         });
         this._overlay.addEventListener("click", (e)=>{
             // close the add recipe page when clicking outside
@@ -3157,7 +3229,7 @@ class AddRecipeView extends (0, _viewJsDefault.default) {
     }
     addHandlerUpload(handler) {
         this._parentElement.addEventListener("submit", (e)=>{
-            e.stopPropagation();
+            e.preventDefault();
             // getting data from the form, take the form element as the param (this._parentElement is the form element)
             const dataArr = [
                 ...new FormData(this._parentElement)
@@ -3170,6 +3242,6 @@ class AddRecipeView extends (0, _viewJsDefault.default) {
 }
 exports.default = new AddRecipeView();
 
-},{"./View.js":"5cUXS","url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["kYpTN","aenu9"], "aenu9", "parcelRequire3a11")
+},{"./View.js":"5cUXS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["kYpTN","aenu9"], "aenu9", "parcelRequire3a11")
 
 //# sourceMappingURL=index.e37f48ea.js.map

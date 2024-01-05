@@ -20,3 +20,25 @@ export async function getJSON(url) {
     throw err; // makes the promise rejected state
   }
 }
+
+// function that uploads the data to the api
+export async function sendJSON(url, uploadData) {
+  try {
+    const fetchPro = fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(uploadData),
+    });
+
+    const res = await Promise.race([fetchPro, timeout(TIMEOUT_SEC)]);
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+
+    return data;
+  } catch (err) {
+    throw err;
+  }
+}

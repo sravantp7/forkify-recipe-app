@@ -1,5 +1,4 @@
 import View from './View.js';
-import icons from 'url:../../img/icons.svg';
 
 class AddRecipeView extends View {
   _parentElement = document.querySelector('.upload');
@@ -13,16 +12,19 @@ class AddRecipeView extends View {
     this._addHandlerShowWindow();
   }
 
+  toggleWindow() {
+    this._overlay.classList.toggle('hidden');
+    this._window.classList.toggle('hidden');
+  }
+
   _addHandlerShowWindow() {
     this._btnOpen.addEventListener('click', e => {
       // open the add recipe page
-      this._overlay.classList.remove('hidden');
-      this._window.classList.remove('hidden');
+      this.toggleWindow();
     });
     this._btnClose.addEventListener('click', e => {
       // close the recipe page when clicking on the close button
-      this._overlay.classList.add('hidden');
-      this._window.classList.add('hidden');
+      this.toggleWindow();
     });
     this._overlay.addEventListener('click', e => {
       // close the add recipe page when clicking outside
@@ -33,7 +35,7 @@ class AddRecipeView extends View {
 
   addHandlerUpload(handler) {
     this._parentElement.addEventListener('submit', e => {
-      e.stopPropagation();
+      e.preventDefault();
 
       // getting data from the form, take the form element as the param (this._parentElement is the form element)
       const dataArr = [...new FormData(this._parentElement)];
