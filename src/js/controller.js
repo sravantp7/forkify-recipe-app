@@ -100,10 +100,18 @@ export async function controlAddRecipe(newRecipe) {
     recipeView.render(model.state.recipe);
 
     addRecipeView.renderMessage('Successfully uploaded the new recipe');
+
+    // updating bookmarks view with the new data
+    bookmarksView.render(model.state.bookmarks);
+
+    // change id in the url
+    window.history.pushState(null, '', `#${model.state.recipe.id}`);
+
     // closing the form window
     setTimeout(() => {
       addRecipeView.toggleWindow();
-    }, 2000);
+      window.location.reload();
+    }, 1000);
   } catch (err) {
     addRecipeView.renderError(err.message);
   }

@@ -33,7 +33,7 @@ function createRecipeObject(data) {
 // function that fetches data from forkify api
 export async function loadRecipe(recipeId) {
   try {
-    const data = await getJSON(`${FORKIFY_API}/${recipeId}`);
+    const data = await getJSON(`${FORKIFY_API}/${recipeId}?key=${API_KEY}`);
 
     state.recipe = createRecipeObject(data);
 
@@ -52,7 +52,9 @@ export async function loadSearchResults(query) {
     state.search.query = query;
 
     // fetching data
-    const recipesData = await getJSON(`${FORKIFY_API}?search=${query}`);
+    const recipesData = await getJSON(
+      `${FORKIFY_API}?search=${query}&key=${API_KEY}`
+    );
 
     if (recipesData.data.recipes.length === 0) {
       throw new Error('No recipies found, Please try again!');
@@ -65,6 +67,7 @@ export async function loadSearchResults(query) {
         image: recipe.image_url,
         publisher: recipe.publisher,
         title: recipe.title,
+        ...(recipe.key && { key: recipe.key }),
       };
     });
 

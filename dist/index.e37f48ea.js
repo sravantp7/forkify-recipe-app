@@ -656,10 +656,15 @@ async function controlAddRecipe(newRecipe) {
         // rendering the new recipe
         (0, _recipeViewJsDefault.default).render(_modelJs.state.recipe);
         (0, _addRecipeViewJsDefault.default).renderMessage("Successfully uploaded the new recipe");
+        // updating bookmarks view with the new data
+        (0, _bookmarksViewJsDefault.default).render(_modelJs.state.bookmarks);
+        // change id in the url
+        window.history.pushState(null, "", `#${_modelJs.state.recipe.id}`);
         // closing the form window
         setTimeout(()=>{
             (0, _addRecipeViewJsDefault.default).toggleWindow();
-        }, 2000);
+            window.location.reload();
+        }, 1000);
     } catch (err) {
         (0, _addRecipeViewJsDefault.default).renderError(err.message);
     }
@@ -1951,7 +1956,7 @@ function createRecipeObject(data) {
 }
 async function loadRecipe(recipeId) {
     try {
-        const data = await (0, _helpersJs.getJSON)(`${(0, _configJs.FORKIFY_API)}/${recipeId}`);
+        const data = await (0, _helpersJs.getJSON)(`${(0, _configJs.FORKIFY_API)}/${recipeId}?key=${(0, _configJs.API_KEY)}`);
         state.recipe = createRecipeObject(data);
         if (state.bookmarks.some((bookmark)=>bookmark.id == recipeId)) state.recipe.bookmarked = true;
         else state.recipe.bookmarked = false;
@@ -1963,7 +1968,7 @@ async function loadSearchResults(query) {
     try {
         state.search.query = query;
         // fetching data
-        const recipesData = await (0, _helpersJs.getJSON)(`${(0, _configJs.FORKIFY_API)}?search=${query}`);
+        const recipesData = await (0, _helpersJs.getJSON)(`${(0, _configJs.FORKIFY_API)}?search=${query}&key=${(0, _configJs.API_KEY)}`);
         if (recipesData.data.recipes.length === 0) throw new Error("No recipies found, Please try again!");
         // Renaming field in the result data
         state.search.results = recipesData.data.recipes.map((recipe)=>{
@@ -1971,7 +1976,10 @@ async function loadSearchResults(query) {
                 id: recipe.id,
                 image: recipe.image_url,
                 publisher: recipe.publisher,
-                title: recipe.title
+                title: recipe.title,
+                ...recipe.key && {
+                    key: recipe.key
+                }
             };
         });
         // resetting page on each new search
@@ -2796,7 +2804,7 @@ class RecipeView extends (0, _viewJsDefault.default) {
                 </div>
             </div>
 
-            <div class="recipe__user-generated">
+            <div class="recipe__user-generated ${this._data.key ? "" : "hidden"}">
                 <svg>
                     <use href="${0, _iconsSvgDefault.default}#icon-user"></use>
                 </svg>
@@ -3089,6 +3097,8 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _viewJs = require("./View.js");
 var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
+var _iconsSvg = require("url:../../img/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 class ResultsView extends (0, _viewJsDefault.default) {
     _parentElement = document.querySelector(".results");
     _generateMarkup() {
@@ -3102,6 +3112,12 @@ class ResultsView extends (0, _viewJsDefault.default) {
                 <div class="preview__data">
                     <h4 class="preview__title">${recipe.title}</h4>
                     <p class="preview__publisher">${recipe.publisher}</p>
+
+                    <div class="preview__user-generated ${recipe.key ? "" : "hidden"}">
+                        <svg>
+                            <use href="${0, _iconsSvgDefault.default}#icon-user"></use>
+                        </svg>
+                    </div>
                 </div>
                 </a>
             </li>`;
@@ -3110,7 +3126,7 @@ class ResultsView extends (0, _viewJsDefault.default) {
 }
 exports.default = new ResultsView();
 
-},{"./View.js":"5cUXS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6z7bi":[function(require,module,exports) {
+},{"./View.js":"5cUXS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","url:../../img/icons.svg":"loVOp"}],"6z7bi":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _viewJs = require("./View.js");
