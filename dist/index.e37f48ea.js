@@ -2904,7 +2904,12 @@ var _iconsSvg = require("url:../../img/icons.svg");
 var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 class View {
     _data;
-    render(data) {
+    /**
+   * Render the received data to the DOM
+   * @param {Object | Object[]} data The data to be rendered
+   * @returns {undefined} Return no result
+   * @this {Object} View instance
+   */ render(data) {
         this._data = data;
         const markup = this._generateMarkup();
         // emptying the recipe container (removes spinner also)

@@ -3,6 +3,13 @@ import icons from 'url:../../img/icons.svg';
 export default class View {
   _data;
 
+  /**
+   * Render the received data to the DOM
+   * @param {Object | Object[]} data The data to be rendered
+   * @returns {undefined} Return no result
+   * @this {Object} View instance
+   */
+
   render(data) {
     this._data = data;
     const markup = this._generateMarkup();
