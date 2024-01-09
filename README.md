@@ -1,7 +1,7 @@
 # Forkify Recipe Application
 
 ## Description
-The Recipe app will help users find the recipes needed to cook their favorite dishes, give an estimated amount of ingredients needed based on the provided servings, and allow users to upload and bookmark their recipes.
+The Recipe app will help users find the ingredients required to cook their favorite dishes, give an estimated amount of ingredients needed based on the serving number, and allow users to upload and bookmark their custom recipes.
 
 ## Features
 1. Browse recipes.
